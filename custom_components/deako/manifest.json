@@ -10,5 +10,6 @@
   "loggers": ["pydeako"],
   "quality_scale": "platinum",
   "requirements": ["pydeako==0.1.0"],
-  "zeroconf": ["_deako._tcp.local."]
+  "zeroconf": ["_deako._tcp.local."],
+  "version": "0.1.0"
 }
