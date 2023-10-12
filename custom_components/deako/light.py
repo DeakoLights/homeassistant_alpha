@@ -1,17 +1,14 @@
 """Binary sensor platform for integration_blueprint."""
 import logging
+import math
 from typing import Any
 
 from pydeako.deako import Deako
 
-from homeassistant.components.light import (
-    ATTR_BRIGHTNESS,
-    ColorMode,
-    LightEntity,
-)
+from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode, LightEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
@@ -89,7 +86,7 @@ class DeakoLightSwitch(LightEntity):
     def brightness(self) -> int:
         """Return the brightness of this light between 0..255."""
         state = self.client.get_state(self.uuid)
-        brightness = state.get("dim", 0) * 2.55
+        brightness = math.floor(state.get("dim", 0) * 2.55)
         if isinstance(brightness, int):
             return brightness
         return 0
@@ -112,7 +109,7 @@ class DeakoLightSwitch(LightEntity):
         if state["dim"] is not None:
             dim = state["dim"]
         if ATTR_BRIGHTNESS in kwargs:
-            dim = (kwargs[ATTR_BRIGHTNESS] / 255) * 100
+            dim = kwargs[ATTR_BRIGHTNESS] / 2.55
         await self.client.control_device(
             self.uuid, True, round(dim, 0) if dim is not None else None
         )
@@ -124,5 +121,5 @@ class DeakoLightSwitch(LightEntity):
         if state["dim"] is not None:
             dim = state["dim"]
         if ATTR_BRIGHTNESS in kwargs:
-            dim = (kwargs[ATTR_BRIGHTNESS] / 255) * 100
+            dim = kwargs[ATTR_BRIGHTNESS] / 2.55
         await self.client.control_device(self.uuid, False, round(dim, 0))
