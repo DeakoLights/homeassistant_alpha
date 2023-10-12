@@ -1,8 +1,0 @@
-{
-  "name": "Deako Alpha",
-  "hacs": "1.6.0",
-  "domains": ["light"],
-  "iot_class": "Local Push",
-  "render_readme": true,
-  "homeassistant": "0.118.0"
-}
