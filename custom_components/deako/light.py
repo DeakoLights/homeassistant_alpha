@@ -1,6 +1,5 @@
 """Binary sensor platform for integration_blueprint."""
 import logging
-import math
 from typing import Any
 
 from pydeako.deako import Deako
@@ -75,7 +74,7 @@ class DeakoLightSwitch(LightEntity):
 
     @property
     def is_on(self) -> bool:
-        """Return true if the lihgt is on."""
+        """Return true if the light is on."""
         state = self.client.get_state(self.uuid)
         power = state.get("power", False)
         if isinstance(power, bool):
@@ -86,17 +85,14 @@ class DeakoLightSwitch(LightEntity):
     def brightness(self) -> int:
         """Return the brightness of this light between 0..255."""
         state = self.client.get_state(self.uuid)
-        brightness = math.floor(state.get("dim", 0) * 2.55)
-        if isinstance(brightness, int):
-            return brightness
-        return 0
+        return int(round(state.get("dim", 0) * 2.55))
 
     @property
     def supported_color_modes(self) -> set[ColorMode]:
         """Flag supported features."""
         color_modes: set[ColorMode] = set()
         state = self.client.get_state(self.uuid)
-        if state["dim"] is None:
+        if state.get("dim") is None:
             color_modes.add(ColorMode.ONOFF)
         else:
             color_modes.add(ColorMode.BRIGHTNESS)
@@ -104,22 +100,14 @@ class DeakoLightSwitch(LightEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the light."""
-        state = self.client.get_state(self.uuid)
         dim = None
-        if state["dim"] is not None:
-            dim = state["dim"]
         if ATTR_BRIGHTNESS in kwargs:
-            dim = kwargs[ATTR_BRIGHTNESS] / 2.55
-        await self.client.control_device(
-            self.uuid, True, round(dim, 0) if dim is not None else None
-        )
+            dim = round(kwargs[ATTR_BRIGHTNESS] / 2.55, 0)
+        await self.client.control_device(self.uuid, True, dim)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the device."""
-        state = self.client.get_state(self.uuid)
-        dim = 100
-        if state["dim"] is not None:
-            dim = state["dim"]
+        dim = None
         if ATTR_BRIGHTNESS in kwargs:
-            dim = kwargs[ATTR_BRIGHTNESS] / 2.55
-        await self.client.control_device(self.uuid, False, round(dim, 0))
+            dim = round(kwargs[ATTR_BRIGHTNESS] / 2.55, 0)
+        await self.client.control_device(self.uuid, False, dim)
