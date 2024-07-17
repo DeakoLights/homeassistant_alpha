@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 
 from pydeako.deako import Deako, DeviceListTimeout, FindDevicesTimeout
-from pydeako.discover import DeakoDiscoverer
+from pydeako.discover import DeakoDiscoverer, DevicesNotFoundException
 
 from homeassistant.components import zeroconf
 from homeassistant.config_entries import ConfigEntry
@@ -13,7 +13,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import DOMAIN
+from .const import ADDRESS, CONNECTION, DOMAIN
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -22,30 +22,33 @@ PLATFORMS: list[Platform] = [Platform.LIGHT]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up deako."""
-    _zc = await zeroconf.async_get_instance(hass)
-    discoverer = DeakoDiscoverer(_zc)
+    # reuse connection from discovery if it exists
+    connection = (hass.data.get(DOMAIN) or {}).get(CONNECTION)
 
-    connection = Deako(discoverer.get_address)
+    if connection is None:
+        address = entry.data.get(ADDRESS)
+        if address is not None:
 
-    await connection.connect()
-    try:
-        await connection.find_devices()
-    except DeviceListTimeout as exc:  # device list never received
-        _LOGGER.warning("Device not responding to device list")
-        await connection.disconnect()
-        raise ConfigEntryNotReady(exc) from exc
-    except FindDevicesTimeout as exc:  # total devices expected not received
-        _LOGGER.warning("Device not responding to device requests")
-        await connection.disconnect()
-        raise ConfigEntryNotReady(exc) from exc
+            async def get_address() -> str:
+                assert isinstance(address, str)
+                return address
+        else:
+            _zc = await zeroconf.async_get_instance(hass)
+            discoverer = DeakoDiscoverer(_zc)
+            get_address = discoverer.get_address
 
-    # If deako devices are advertising on mdns, we should be able to get at least one device
-    devices = connection.get_devices()
-    if len(devices) == 0:
-        await connection.disconnect()
-        raise ConfigEntryNotReady(devices)
+        connection = Deako(get_address)
 
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection
+        try:
+            await connection.connect()
+            await connection.find_devices()
+        except (DevicesNotFoundException, DeviceListTimeout, FindDevicesTimeout) as exc:
+            await connection.disconnect()
+            raise ConfigEntryNotReady(exc) from exc
+
+    hass.data.setdefault(DOMAIN, {})
+
+    hass.data[DOMAIN][CONNECTION] = connection
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -54,9 +57,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    await hass.data[DOMAIN][entry.entry_id].disconnect()
+    await hass.data[DOMAIN][CONNECTION].disconnect()
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        hass.data[DOMAIN].pop(entry.entry_id)
+        hass.data.pop(DOMAIN)
 
     return unload_ok

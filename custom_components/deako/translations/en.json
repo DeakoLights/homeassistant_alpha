@@ -1,12 +1,18 @@
 {
     "config": {
-        "abort": {
-            "no_devices_found": "No devices found on the network",
-            "single_instance_allowed": "Already configured. Only a single configuration possible."
-        },
         "step": {
-            "confirm": {
-                "description": "Do you want to start setup?"
+            "user": {
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "Host for connected Deako device (static local IP preferred). Leave blank to use auto-discovery."
+                },
+                "description": "Set up Deako to integrate with Home Assistant."
+            },
+            "zeroconf_confirm": {
+                "description": "Do you want to add the Deako integration to Home Assistant?",
+                "title": "Discovered Deako device"
             }
         }
     }

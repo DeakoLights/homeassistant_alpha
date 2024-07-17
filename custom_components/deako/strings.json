@@ -1,13 +1,19 @@
 {
   "config": {
     "step": {
-      "confirm": {
-        "description": "[%key:common::config_flow::description::confirm_setup%]"
+      "user": {
+        "description": "Set up Deako to integrate with Home Assistant.",
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]"
+        },
+        "data_description": {
+          "host": "Host for connected Deako device (static local IP preferred). Leave blank to use auto-discovery."
+        }
+      },
+      "zeroconf_confirm": {
+        "description": "Do you want to add the Deako integration to Home Assistant?",
+        "title": "Discovered Deako device"
       }
-    },
-    "abort": {
-      "single_instance_allowed": "[%key:common::config_flow::abort::single_instance_allowed%]",
-      "no_devices_found": "[%key:common::config_flow::abort::no_devices_found%]"
     }
   }
 }

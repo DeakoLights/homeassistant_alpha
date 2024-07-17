@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN
+from .const import CONNECTION, DOMAIN
 
 # Model names
 MODEL_SMART = "smart"
@@ -26,7 +26,7 @@ async def async_setup_entry(
     add_entities: AddEntitiesCallback,
 ) -> None:
     """Configure the platform."""
-    client: Deako = hass.data[DOMAIN][config.entry_id]
+    client: Deako = hass.data[DOMAIN][CONNECTION]
 
     devices = client.get_devices()
     lights = [DeakoLightEntity(client, uuid) for uuid in devices]

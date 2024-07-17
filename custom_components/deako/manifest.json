@@ -1,25 +1,13 @@
 {
   "domain": "deako",
   "name": "Deako",
-  "codeowners": [
-    "@sebirdman",
-    "@balake",
-    "@deakolights"
-  ],
+  "codeowners": ["@sebirdman", "@balake", "@deakolights"],
   "config_flow": true,
-  "dependencies": [
-    "zeroconf"
-  ],
+  "dependencies": ["zeroconf"],
   "documentation": "https://www.home-assistant.io/integrations/deako",
   "iot_class": "local_polling",
-  "loggers": [
-    "pydeako"
-  ],
-  "requirements": [
-    "pydeako==0.4.0"
-  ],
-  "zeroconf": [
-    "_deako._tcp.local."
-  ],
-  "version": "0.3.1"
+  "loggers": ["pydeako"],
+  "requirements": ["pydeako==0.4.0"],
+  "version": "0.4.0",
+  "zeroconf": ["_deako._tcp.local."]
 }
