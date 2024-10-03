@@ -1,3 +1,5 @@
+# **This integration is now no longer necessary with deako being part of HA core.**
+
 # Deako Alpha HA integration
 
 Component to integrate with Deako using the public local api
